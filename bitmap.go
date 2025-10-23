@@ -239,7 +239,7 @@ func dimensionsOf(n, m int) uint64 {
 func pointersOf(other Bitmap, extra []Bitmap) (unsafe.Pointer, int) {
 	out := make([]unsafe.Pointer, len(extra)+1)
 	out[0] = unsafe.Pointer(&other[0])
-	max := 0
+	max := len(other)
 
 	for i := range extra {
 		out[i+1] = unsafe.Pointer(&extra[i][0])

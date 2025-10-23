@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kelindar/bitmap"
+	"github.com/eqwile/bitmap"
 )
 
 func main() {

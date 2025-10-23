@@ -1,4 +1,4 @@
-module github.com/kelindar/bitmap
+module github.com/eqwile/bitmap
 
 go 1.18
 

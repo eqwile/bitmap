@@ -77,21 +77,23 @@ func (dst *Bitmap) Or(other Bitmap, extra ...Bitmap) {
 	}
 
 	dst.grow(max - 1)
+	bitmaps := growMany(append([]Bitmap{other}, extra...), max)
+
 	switch hardware {
 	case isAccelerated:
 		switch len(extra) {
 		case 0:
-			_or(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&other[0]), uint64(len(other)))
+			_or(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&bitmaps[0][0]), uint64(len(other)))
 		default:
-			vx, max := pointersOf(other, extra)
+			vx, max := pointersOf(bitmaps[0], bitmaps[1:])
 			_or_many(unsafe.Pointer(&(*dst)[0]), vx, dimensionsOf(max, len(extra)+1))
 		}
 	case isAVX512:
 		switch len(extra) {
 		case 0:
-			_or_avx512(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&other[0]), uint64(len(other)))
+			_or_avx512(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&bitmaps[0][0]), uint64(len(other)))
 		default:
-			vx, max := pointersOf(other, extra)
+			vx, max := pointersOf(bitmaps[0], bitmaps[1:])
 			_or_many_avx512(unsafe.Pointer(&(*dst)[0]), vx, dimensionsOf(max, len(extra)+1))
 		}
 	default:
@@ -107,21 +109,23 @@ func (dst *Bitmap) Xor(other Bitmap, extra ...Bitmap) {
 	}
 
 	dst.grow(max - 1)
+	bitmaps := growMany(append([]Bitmap{other}, extra...), max)
+
 	switch hardware {
 	case isAccelerated:
 		switch len(extra) {
 		case 0:
-			_xor(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&other[0]), uint64(len(other)))
+			_xor(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&bitmaps[0][0]), uint64(len(other)))
 		default:
-			vx, max := pointersOf(other, extra)
+			vx, max := pointersOf(bitmaps[0], bitmaps[1:])
 			_xor_many(unsafe.Pointer(&(*dst)[0]), vx, dimensionsOf(max, len(extra)+1))
 		}
 	case isAVX512:
 		switch len(extra) {
 		case 0:
-			_xor_avx512(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&other[0]), uint64(len(other)))
+			_xor_avx512(unsafe.Pointer(&(*dst)[0]), unsafe.Pointer(&bitmaps[0][0]), uint64(len(other)))
 		default:
-			vx, max := pointersOf(other, extra)
+			vx, max := pointersOf(bitmaps[0], bitmaps[1:])
 			_xor_many_avx512(unsafe.Pointer(&(*dst)[0]), vx, dimensionsOf(max, len(extra)+1))
 		}
 	default:

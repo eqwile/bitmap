@@ -565,6 +565,69 @@ func TestBatched(t *testing.T) {
 	}
 }
 
+func TestBatchedDifferentSizes(t *testing.T) {
+	for _, withHw := range []int{isAccelerated, isUnsupported} {
+		t.Run(fmt.Sprintf("avx=%v", withHw), func(t *testing.T) {
+			hardware = withHw
+
+			// Test And with different sizes
+			{
+				a := Bitmap{0xFF, 0xFF, 0xFF}
+				b := Bitmap{0x0F, 0x0F}
+				c := Bitmap{0x03}
+				d := Bitmap{0x01, 0x01, 0x01}
+
+				a.And(b, c, d)
+				// Result should be limited to minimum length (1)
+				// 0xFF & 0x0F & 0x03 & 0x01 = 0x01
+				assert.Equal(t, 1, len(a))
+				assert.Equal(t, uint64(0x01), a[0])
+			}
+
+			// Test Or with different sizes
+			{
+				a := Bitmap{0x01}
+				b := Bitmap{0x02, 0x04}
+				c := Bitmap{0x08, 0x10, 0x20}
+
+				a.Or(b, c)
+				// Result should be maximum length (3)
+				assert.Equal(t, 3, len(a))
+				assert.Equal(t, uint64(0x01|0x02|0x08), a[0])
+				assert.Equal(t, uint64(0x04|0x10), a[1])
+				assert.Equal(t, uint64(0x20), a[2])
+			}
+
+			// Test Xor with different sizes
+			{
+				a := Bitmap{0xFF}
+				b := Bitmap{0x0F, 0xF0}
+				c := Bitmap{0x55, 0xAA, 0xCC}
+
+				a.Xor(b, c)
+				// Result should be maximum length (3)
+				assert.Equal(t, 3, len(a))
+				assert.Equal(t, uint64(0xFF^0x0F^0x55), a[0])
+				assert.Equal(t, uint64(0xF0^0xAA), a[1])
+				assert.Equal(t, uint64(0xCC), a[2])
+			}
+
+			// Test AndNot with different sizes
+			{
+				a := Bitmap{0xFF, 0xFF}
+				b := Bitmap{0x0F}
+				c := Bitmap{0x03, 0x0C}
+
+				a.AndNot(b, c)
+				// Result should be: a &^ b &^ c for minimum length
+				// First element: 0xFF &^ 0x0F &^ 0x03 = 0xF0 &^ 0x03 = 0xF0
+				assert.Equal(t, 2, len(a))
+				assert.Equal(t, Bitmap{0xF0, 0xFF}, a)
+			}
+		})
+	}
+}
+
 func TestEmptyAnd(t *testing.T) {
 	var a, b Bitmap
 	a.And(b)

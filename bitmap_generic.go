@@ -22,14 +22,16 @@ func (dst *Bitmap) AndNot(other Bitmap, extra ...Bitmap) {
 func (dst *Bitmap) Or(other Bitmap, extra ...Bitmap) {
 	max := maxlen(*dst, other, extra)
 	dst.grow(max - 1)
-	or(*dst, other, extra)
+	bitmaps := growMany(append([]Bitmap{other}, extra...), max)
+	or(*dst, bitmaps[0], bitmaps[1:])
 }
 
 // Xor computes the symmetric difference between two bitmaps and stores the result in the current bitmap
 func (dst *Bitmap) Xor(other Bitmap, extra ...Bitmap) {
 	max := maxlen(*dst, other, extra)
 	dst.grow(max - 1)
-	xor(*dst, other, extra)
+	bitmaps := growMany(append([]Bitmap{other}, extra...), max)
+	xor(*dst, bitmaps[0], bitmaps[1:])
 }
 
 // Count returns the number of elements in this bitmap

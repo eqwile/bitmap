@@ -250,3 +250,17 @@ func pointersOf(other Bitmap, extra []Bitmap) (unsafe.Pointer, int) {
 
 	return unsafe.Pointer(&out[0]), max
 }
+
+// growMany extends all bitmaps to the specified length, creating copies where needed
+func growMany(bitmaps []Bitmap, length int) []Bitmap {
+	result := make([]Bitmap, len(bitmaps))
+	for i := range bitmaps {
+		if len(bitmaps[i]) >= length {
+			result[i] = bitmaps[i][:length]
+		} else {
+			result[i] = make(Bitmap, length)
+			copy(result[i], bitmaps[i])
+		}
+	}
+	return result
+}
